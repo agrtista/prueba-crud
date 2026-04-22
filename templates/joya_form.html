@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if joya else 'Nueva' }} Joya{% endblock %}
+{% block page_title %}{{ 'Editar' if joya else 'Registrar' }} Joya{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:700px;">
+  <form method="post">
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Descripción *</label>
+        <input type="text" name="descripcion" required
+               placeholder="Ej: Anillo solitario con diamante central"
+               value="{{ joya.descripcion if joya else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select name="tipo">
+          <option value="">— Seleccionar —</option>
+          {% for t in ['Anillo','Collar','Pulsera','Arete','Broche','Cadena','Dije','Reloj','Otro'] %}
+          <option value="{{ t }}" {% if joya and joya.tipo == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Material</label>
+        <select name="material">
+          <option value="">— Seleccionar —</option>
+          {% for m in ['Oro','Plata','Platino','Oro blanco','Oro rosa','Acero','Otro'] %}
+          <option value="{{ m }}" {% if joya and joya.material == m %}selected{% endif %}>{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Quilates</label>
+        <select name="quilates">
+          <option value="">— N/A —</option>
+          {% for q in ['8k','10k','14k','18k','21k','24k','925 (plata)','950 (platino)'] %}
+          <option value="{{ q }}" {% if joya and joya.quilates == q %}selected{% endif %}>{{ q }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Peso (gramos)</label>
+        <input type="number" name="peso_gramos" step="0.01" min="0"
+               value="{{ joya.peso_gramos if joya and joya.peso_gramos else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Valor Estimado ($)</label>
+        <input type="number" name="valor_estimado" step="0.01" min="0"
+               value="{{ joya.valor_estimado if joya and joya.valor_estimado else '' }}">
+      </div>
+      {% if not joya %}
+      <div class="form-group">
+        <label>Origen</label>
+        <select name="origen">
+          <option value="propia">Propia (inventario)</option>
+          <option value="empenada">Empeñada</option>
+        </select>
+      </div>
+      {% endif %}
+      <div class="form-group full">
+        <label>Notas / Descripción adicional</label>
+        <textarea name="notas" placeholder="Piedras, grabados, condición, etc.">{{ joya.notas if joya else '' }}</textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <a href="{{ url_for('inventario') }}" class="btn btn-outline">Cancelar</a>
+      <button type="submit" class="btn btn-gold">
+        {{ 'Guardar cambios' if joya else 'Registrar Joya' }}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

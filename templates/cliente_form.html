@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if cliente else 'Nuevo' }} Cliente{% endblock %}
+{% block page_title %}{{ 'Editar' if cliente else 'Nuevo' }} Cliente{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:700px;">
+  <form method="post">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nombre *</label>
+        <input type="text" name="nombre" required value="{{ cliente.nombre if cliente else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Apellido *</label>
+        <input type="text" name="apellido" required value="{{ cliente.apellido if cliente else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Identificación (INE/Pasaporte)</label>
+        <input type="text" name="identificacion" value="{{ cliente.identificacion if cliente else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Teléfono</label>
+        <input type="tel" name="telefono" value="{{ cliente.telefono if cliente else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ cliente.email if cliente else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Dirección</label>
+        <input type="text" name="direccion" value="{{ cliente.direccion if cliente else '' }}">
+      </div>
+      <div class="form-group full">
+        <label>Notas internas</label>
+        <textarea name="notas">{{ cliente.notas if cliente else '' }}</textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <a href="{{ url_for('clientes') }}" class="btn btn-outline">Cancelar</a>
+      <button type="submit" class="btn btn-gold">
+        {{ 'Guardar cambios' if cliente else 'Registrar cliente' }}
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

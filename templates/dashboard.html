@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block top_actions %}
+  <a href="{{ url_for('nuevo_empenio') }}" class="btn btn-gold">+ Nuevo Empeño</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<div class="stats-grid">
+<a href="{{ url_for('clientes') }}">
+  <div class="stat-card">
+    <span class="stat-icon">👤</span>
+    <div class="stat-value">{{ total_clientes }}</div>
+    <div class="stat-label">Clientes</div>
+  </div>
+</a>
+  <div class="stat-card">
+    <span class="stat-icon">🔑</span>
+    <div class="stat-value">{{ empenios_activos }}</div>
+    <div class="stat-label">Empeños Activos</div>
+  </div>
+  <div class="stat-card {% if empenios_vencidos > 0 %}danger{% endif %}">
+    <span class="stat-icon">⚠️</span>
+    <div class="stat-value">{{ empenios_vencidos }}</div>
+    <div class="stat-label">Empeños Vencidos</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">💎</span>
+    <div class="stat-value">{{ joyas_en_guarda }}</div>
+    <div class="stat-label">Joyas en Guarda</div>
+  </div>
+  <div class="stat-card success">
+    <span class="stat-icon">💰</span>
+    <div class="stat-value">${{ "%.0f"|format(ingresos_mes) }}</div>
+    <div class="stat-label">Ingresos del Mes</div>
+  </div>
+</div>
+
+<!-- ALERTS -->
+{% if proximos %}
+<div class="alert-box warning" style="margin-bottom:20px;">
+  ⚠️ <strong>{{ proximos|length }} empeño(s)</strong> vencen en los próximos 7 días. Revisar y contactar clientes.
+</div>
+{% endif %}
+
+<!-- TABLES ROW -->
+<div class="two-col">
+
+  <!-- Últimos empeños -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Últimos Empeños</div>
+      <a href="{{ url_for('empenios') }}" class="btn btn-outline btn-sm">Ver todos</a>
+    </div>
+    {% if ultimos_empenios %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Cliente</th>
+            <th>Monto</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in ultimos_empenios %}
+          <tr>
+            <td><a href="{{ url_for('ver_empenio', id=e.id) }}">{{ e.folio }}</a></td>
+            <td>{{ e.nombre }}</td>
+            <td>${{ "%.0f"|format(e.monto_prestamo) }}</td>
+            <td>
+              {% if e.estado == 'activo' and e.fecha_vencimiento < hoy %}
+                <span class="badge badge-vencido">Vencido</span>
+              {% else %}
+                <span class="badge badge-{{ e.estado }}">{{ e.estado|capitalize }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🔑</div>
+      <p>No hay empeños registrados.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Próximos a vencer -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Próximos a Vencer</div>
+    </div>
+    {% if proximos %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Cliente</th>
+            <th>Vence</th>
+            <th>Días</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in proximos %}
+          <tr>
+            <td><a href="{{ url_for('ver_empenio', id=e.id) }}">{{ e.folio }}</a></td>
+            <td>{{ e.nombre }}</td>
+            <td>{{ e.fecha_vencimiento|fecha }}</td>
+            <td>
+              <span class="badge badge-vencido">{{ e.dias_restantes }}d</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">✅</div>
+      <p>Sin vencimientos próximos.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

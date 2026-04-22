@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Inventario{% endblock %}
+{% block page_title %}Inventario de Joyas{% endblock %}
+
+{% block top_actions %}
+  <a href="{{ url_for('nueva_joya') }}" class="btn btn-gold">+ Registrar Joya</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:18px; align-items:center;">
+    <form class="search-bar" method="get" style="margin:0; flex:1;">
+      <input type="text" name="q" placeholder="Buscar por descripción, tipo, material…" value="{{ q }}">
+      <input type="hidden" name="estado" value="{{ filtro }}">
+      <button type="submit" class="btn btn-outline">Buscar</button>
+    </form>
+  </div>
+
+  <div class="filter-tabs">
+    {% for key, label in [('todos','Todas'), ('disponible','Disponibles'), ('empenada','Empeñadas'), ('vendida','Vendidas')] %}
+    <a href="{{ url_for('inventario', estado=key, q=q) }}"
+       class="filter-tab {% if filtro == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if joyas %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Descripción</th>
+          <th>Tipo</th>
+          <th>Material</th>
+          <th>Quilates</th>
+          <th>Peso (g)</th>
+          <th>Valor Est.</th>
+          <th>Origen</th>
+          <th>Estado</th>
+          <th>Ingreso</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for j in joyas %}
+        <tr>
+          <td style="color:var(--text3);">{{ j.id }}</td>
+          <td>{{ j.descripcion }}</td>
+          <td>{{ j.tipo or '—' }}</td>
+          <td>{{ j.material or '—' }}</td>
+          <td>{{ j.quilates or '—' }}</td>
+          <td>{{ j.peso_gramos or '—' }}</td>
+          <td>{% if j.valor_estimado %}${{ "%.0f"|format(j.valor_estimado) }}{% else %}—{% endif %}</td>
+          <td><span class="badge badge-{{ j.origen }}">{{ j.origen }}</span></td>
+          <td><span class="badge badge-{{ j.estado }}">{{ j.estado }}</span></td>
+          <td>{{ j.fecha_ingreso|fecha }}</td>
+          <td>
+            <a href="{{ url_for('editar_joya', id=j.id) }}" class="btn btn-outline btn-sm">Editar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">💎</div>
+    <p>No hay joyas registradas con ese filtro.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

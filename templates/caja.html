@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Caja{% endblock %}
+{% block page_title %}Caja — {{ meses[mes-1] }} {{ anio }}{% endblock %}
+
+{% block content %}
+
+<!-- Navegación de mes -->
+{% set mes_ant = mes - 1 if mes > 1 else 12 %}
+{% set anio_ant = anio if mes > 1 else anio - 1 %}
+{% set mes_sig = mes + 1 if mes < 12 else 1 %}
+{% set anio_sig = anio if mes < 12 else anio + 1 %}
+
+<div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+  <a href="{{ url_for('caja', mes=mes_ant, anio=anio_ant) }}" class="btn btn-outline">← Anterior</a>
+  <span style="font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--gold-light);">
+    {{ meses[mes-1] }} {{ anio }}
+  </span>
+  <a href="{{ url_for('caja', mes=mes_sig, anio=anio_sig) }}" class="btn btn-outline">Siguiente →</a>
+</div>
+
+<!-- Stats del mes -->
+<div class="stats-grid" style="margin-bottom:24px;">
+  <div class="stat-card success">
+    <span class="stat-icon">💰</span>
+    <div class="stat-value">${{ "%.0f"|format(total_mes) }}</div>
+    <div class="stat-label">Total del Mes</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">📈</span>
+    <div class="stat-value">${{ "%.0f"|format(total_intereses) }}</div>
+    <div class="stat-label">Intereses</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">🏦</span>
+    <div class="stat-value">${{ "%.0f"|format(total_capital) }}</div>
+    <div class="stat-label">Abonos Capital</div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-icon">✅</span>
+    <div class="stat-value">${{ "%.0f"|format(total_desempenios) }}</div>
+    <div class="stat-label">Desempeños</div>
+  </div>
+</div>
+
+<!-- Tabla de pagos -->
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">Movimientos — {{ meses[mes-1] }} {{ anio }}</div>
+    <span style="color:var(--text3); font-size:.82rem;">{{ pagos|length }} transacciones</span>
+  </div>
+
+  {% if pagos %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Empeño</th>
+          <th>Cliente</th>
+          <th>Tipo</th>
+          <th>Monto</th>
+          <th>Notas</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pagos %}
+        <tr>
+          <td>{{ p.fecha|fecha }}</td>
+          <td><a href="{{ url_for('ver_empenio', id=p.empenio_id) }}">{{ p.folio }}</a></td>
+          <td>{{ p.cliente_nombre }}</td>
+          <td>
+            {% if p.tipo == 'interes' %}<span class="badge badge-activo">Interés</span>
+            {% elif p.tipo == 'capital' %}<span class="badge badge-empenada">Capital</span>
+            {% elif p.tipo == 'desempenio' %}<span class="badge badge-desempenado">Desempeño</span>
+            {% endif %}
+          </td>
+          <td style="color:var(--green); font-weight:600;">${{ "%.2f"|format(p.monto) }}</td>
+          <td style="color:var(--text3);">{{ p.notas or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">💰</div>
+    <p>Sin movimientos este mes.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

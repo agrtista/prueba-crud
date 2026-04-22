@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Joyería Dorada{% endblock %} — Sistema de Gestión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-gem">◆</div>
+      <div>
+        <span class="logo-name">GUILLERMO</span>
+        <span class="logo-sub">Joyería</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+        <span class="nav-icon">⬡</span> Dashboard
+      </a>
+      <div class="nav-section">Operaciones</div>
+      <a href="{{ url_for('empenios') }}" class="nav-item {% if 'empenio' in request.endpoint %}active{% endif %}">
+        <span class="nav-icon">🔑</span> Empeños
+      </a>
+      <a href="{{ url_for('caja') }}" class="nav-item {% if request.endpoint == 'caja' %}active{% endif %}">
+        <span class="nav-icon">💰</span> Caja
+      </a>
+      <div class="nav-section">Administración</div>
+      <a href="{{ url_for('clientes') }}" class="nav-item {% if 'cliente' in request.endpoint %}active{% endif %}">
+        <span class="nav-icon">👤</span> Clientes
+      </a>
+      <a href="{{ url_for('inventario') }}" class="nav-item {% if 'inventario' in request.endpoint or 'joya' in request.endpoint %}active{% endif %}">
+        <span class="nav-icon">💎</span> Inventario
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-date" id="fecha-hoy"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="top-bar">
+      <div class="page-title">{% block page_title %}{% endblock %}</div>
+      <div class="top-actions">{% block top_actions %}{% endblock %}</div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

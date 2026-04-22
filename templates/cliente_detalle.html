@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ cliente.nombre_completo }}{% endblock %}
+{% block page_title %}{{ cliente.nombre_completo }}{% endblock %}
+
+{% block top_actions %}
+  <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-outline">✏️ Editar</a>
+  <a href="{{ url_for('nuevo_empenio') }}?cliente_id={{ cliente.id }}" class="btn btn-gold">+ Empeño</a>
+{% endblock %}
+
+{% block content %}
+<div class="two-col" style="align-items:start;">
+
+  <!-- Info del cliente -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:20px;">Información Personal</div>
+    <div class="detail-grid">
+      <div class="detail-item">
+        <div class="detail-label">Identificación</div>
+        <div class="detail-value">{{ cliente.identificacion or '—' }}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Teléfono</div>
+        <div class="detail-value">{{ cliente.telefono or '—' }}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Email</div>
+        <div class="detail-value">{{ cliente.email or '—' }}</div>
+      </div>
+      <div class="detail-item">
+        <div class="detail-label">Registro</div>
+        <div class="detail-value">{{ cliente.fecha_registro|fecha }}</div>
+      </div>
+      {% if cliente.direccion %}
+      <div class="detail-item" style="grid-column:1/-1;">
+        <div class="detail-label">Dirección</div>
+        <div class="detail-value">{{ cliente.direccion }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% if cliente.notas %}
+    <hr class="divider">
+    <div class="detail-label">Notas</div>
+    <div style="color:var(--text2); font-size:.88rem; margin-top:6px;">{{ cliente.notas }}</div>
+    {% endif %}
+
+    <hr class="divider">
+    <div style="display:flex; gap:20px;">
+      <div>
+        <div class="stat-value" style="font-size:1.6rem;">{{ cliente.total_empenios }}</div>
+        <div class="stat-label">Total empeños</div>
+      </div>
+      <div>
+        <div class="stat-value" style="font-size:1.6rem; color:{% if cliente.empenios_activos > 0 %}var(--gold){% else %}var(--text3){% endif %};">{{ cliente.empenios_activos }}</div>
+        <div class="stat-label">Activos</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historial empeños -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom:20px;">Historial de Empeños</div>
+    {% if empenios %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Folio</th>
+            <th>Monto</th>
+            <th>Inicio</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in empenios|sort(attribute='id', reverse=True) %}
+          <tr>
+            <td><a href="{{ url_for('ver_empenio', id=e.id) }}">{{ e.folio }}</a></td>
+            <td>${{ "%.0f"|format(e.monto_prestamo) }}</td>
+            <td>{{ e.fecha_inicio|fecha }}</td>
+            <td><span class="badge badge-{{ e.estado }}">{{ e.estado }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🔑</div>
+      <p>Sin empeños registrados.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

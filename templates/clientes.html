@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Clientes{% endblock %}
+{% block page_title %}Clientes — CRM{% endblock %}
+
+{% block top_actions %}
+  <a href="{{ url_for('nuevo_cliente') }}" class="btn btn-gold">+ Nuevo Cliente</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <form class="search-bar" method="get">
+    <input type="text" name="q" placeholder="Buscar por nombre, ID, teléfono…" value="{{ q }}">
+    <button type="submit" class="btn btn-outline">Buscar</button>
+    {% if q %}<a href="{{ url_for('clientes') }}" class="btn btn-outline">Limpiar</a>{% endif %}
+  </form>
+
+  {% if clientes %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>Identificación</th>
+          <th>Teléfono</th>
+          <th>Email</th>
+          <th>Empeños</th>
+          <th>Activos</th>
+          <th>Registro</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in clientes %}
+        <tr>
+          <td><a href="{{ url_for('ver_cliente', id=c.id) }}">{{ c.nombre_completo }}</a></td>
+          <td>{{ c.identificacion or '—' }}</td>
+          <td>{{ c.telefono or '—' }}</td>
+          <td>{{ c.email or '—' }}</td>
+          <td>{{ c.total_empenios }}</td>
+          <td>
+            {% if c.activos > 0 %}
+              <span class="badge badge-activo">{{ c.activos }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td>{{ c.fecha_registro|fecha }}</td>
+          <td>
+            <a href="{{ url_for('ver_cliente', id=c.id) }}" class="btn btn-outline btn-sm">Ver</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">👤</div>
+    <p>{% if q %}Sin resultados para "{{ q }}"{% else %}No hay clientes registrados.{% endif %}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

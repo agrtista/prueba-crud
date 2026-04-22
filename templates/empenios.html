@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Empeños{% endblock %}
+{% block page_title %}Empeños{% endblock %}
+
+{% block top_actions %}
+  <a href="{{ url_for('nuevo_empenio') }}" class="btn btn-gold">+ Nuevo Empeño</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="filter-tabs">
+    {% for key, label in [('activo','Activos'), ('desempenado','Desempeñados'), ('perdido','Perdidos'), ('todos','Todos')] %}
+    <a href="{{ url_for('empenios', estado=key) }}"
+       class="filter-tab {% if filtro == key %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if empenios %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Folio</th>
+          <th>Cliente</th>
+          <th>Joya</th>
+          <th>Préstamo</th>
+          <th>Interés%</th>
+          <th>Inicio</th>
+          <th>Vence</th>
+          <th>Saldo</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in empenios %}
+        {% set vencido = e.estado == 'activo' and e.fecha_vencimiento < hoy %}
+        <tr>
+          <td><a href="{{ url_for('ver_empenio', id=e.id) }}">{{ e.folio }}</a></td>
+          <td><a href="{{ url_for('ver_cliente', id=e.cliente_id) }}">{{ e.nombre }}</a></td>
+          <td>{{ e.joya_desc[:30] }}…</td>
+          <td>${{ "%.0f"|format(e.monto_prestamo) }}</td>
+          <td>{{ e.tasa_interes }}%</td>
+          <td>{{ e.fecha_inicio|fecha }}</td>
+          <td class="{% if vencido %}text-red{% endif %}">
+            {{ e.fecha_vencimiento|fecha if e.fecha_vencimiento else '—' }}
+          </td>
+          <td>${{ "%.0f"|format(e.saldo) }}</td>
+          <td>
+            {% if vencido %}
+              <span class="badge badge-vencido">Vencido</span>
+            {% else %}
+              <span class="badge badge-{{ e.estado }}">{{ e.estado }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('ver_empenio', id=e.id) }}" class="btn btn-outline btn-sm">Ver</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🔑</div>
+    <p>No hay empeños con ese filtro.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

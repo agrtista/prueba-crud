@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}{{ e.folio }}{% endblock %}
+{% block page_title %}Empeño {{ e.folio }}{% endblock %}
+{% block top_actions %}
+  <span class="badge badge-{{ 'vencido' if e.vencido else e.estado }}" style="font-size:.85rem;padding:6px 14px;">
+    {{ 'VENCIDO' if e.vencido else e.estado|upper }}
+  </span>
+{% endblock %}
+{% block content %}
+{% if e.vencido %}
+<div class="alert-box" style="margin-bottom:20px;">
+  ⚠️ Empeño <strong>vencido desde {{ e.fecha_vencimiento[:10] }}</strong>. Contactar cliente.
+</div>
+{% elif e.dias_restantes is not none and e.dias_restantes <= 7 and e.estado == 'activo' %}
+<div class="alert-box warning" style="margin-bottom:20px;">
+  ⏳ Vence en <strong>{{ e.dias_restantes }} día(s)</strong>.
+</div>
+{% endif %}
+<div class="two-col" style="align-items:start;">
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:18px;">Resumen Financiero</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;text-align:center;">
+        <div><div class="detail-label">Préstamo</div><div class="detail-value big">${{ "%.0f"|format(e.monto_prestamo) }}</div></div>
+        <div><div class="detail-label">Interés acum.</div><div class="detail-value big" style="color:var(--orange);">${{ "%.0f"|format(e.interes) }}</div></div>
+        <div><div class="detail-label">Saldo a pagar</div><div class="detail-value big" style="color:{% if e.saldo > 0 %}#eb5757{% else %}#6fcf97{% endif %}">${{ "%.0f"|format(e.saldo) }}</div></div>
+      </div>
+      <hr class="divider">
+      <div class="detail-grid">
+        <div class="detail-item"><div class="detail-label">Tasa de interés</div><div class="detail-value">{{ e.tasa_interes }}% mensual</div></div>
+        <div class="detail-item"><div class="detail-label">Total pagado</div><div class="detail-value">${{ "%.2f"|format(e.pagado) }}</div></div>
+        <div class="detail-item"><div class="detail-label">Fecha inicio</div><div class="detail-value">{{ e.fecha_inicio[:10] }}</div></div>
+        <div class="detail-item"><div class="detail-label">Fecha vencimiento</div><div class="detail-value">{{ e.fecha_vencimiento[:10] if e.fecha_vencimiento else '—' }}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px;">Joya en Garantía</div>
+      <div class="detail-grid">
+        <div class="detail-item" style="grid-column:1/-1;"><div class="detail-label">Descripción</div><div class="detail-value">{{ e.joya_desc }}</div></div>
+        <div class="detail-item"><div class="detail-label">Tipo</div><div class="detail-value">{{ e.joya_tipo or '—' }}</div></div>
+        <div class="detail-item"><div class="detail-label">Material</div><div class="detail-value">{{ e.joya_material or '—' }}</div></div>
+        <div class="detail-item"><div class="detail-label">Quilates</div><div class="detail-value">{{ e.joya_quilates or '—' }}</div></div>
+        <div class="detail-item"><div class="detail-label">Peso</div><div class="detail-value">{{ e.joya_peso or '—' }} g</div></div>
+        <div class="detail-item"><div class="detail-label">Valor est.</div><div class="detail-value">{% if e.joya_valor %}${{ "%.0f"|format(e.joya_valor) }}{% else %}—{% endif %}</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="detail-label" style="margin-bottom:8px;">Cliente</div>
+      <div class="detail-value" style="font-size:1.1rem;margin-bottom:4px;">
+        <a href="{{ url_for('ver_cliente', id=e.cid) }}">{{ e.cliente_nombre }}</a>
+      </div>
+      {% if e.cliente_tel %}<div style="color:var(--text2);font-size:.88rem;">📞 {{ e.cliente_tel }}</div>{% endif %}
+      {% if e.notas %}<hr class="divider"><div class="detail-label">Notas</div><div style="color:var(--text2);font-size:.88rem;margin-top:6px;">{{ e.notas }}</div>{% endif %}
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    {% if e.estado == 'activo' %}
+    <div class="card">
+      <div class="card-title" style="margin-bottom:18px;">Registrar Pago</div>
+      <form method="post" action="{{ url_for('registrar_pago', id=e.id) }}">
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Tipo de pago</label>
+          <select name="tipo">
+            <option value="interes">Pago de interés</option>
+            <option value="capital">Abono a capital</option>
+            <option value="desempenio">Desempeño (pago total)</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label>Monto ($)</label>
+          <input type="number" name="monto" step="0.01" min="0.01" required placeholder="{{ "%.2f"|format(e.saldo) }}">
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Notas</label><input type="text" name="notas" placeholder="Opcional">
+        </div>
+        <button type="submit" class="btn btn-gold" style="width:100%;">Registrar Pago</button>
+      </form>
+      <hr class="divider">
+      <form method="post" action="{{ url_for('perder_empenio', id=e.id) }}"
+            onsubmit="return confirm('¿Confirmar pérdida de empeño? La joya pasa al inventario.')">
+        <button type="submit" class="btn btn-danger" style="width:100%;">Marcar como Perdido</button>
+      </form>
+    </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px;">Historial de Pagos</div>
+      {% if pagos %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th></tr></thead>
+          <tbody>
+            {% for p in pagos %}
+            <tr>
+              <td>{{ p.fecha[:10] }}</td>
+              <td>{{ p.tipo|capitalize }}</td>
+              <td style="color:var(--green);">${{ "%.2f"|format(p.monto) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state" style="padding:30px 0;"><p>Sin pagos registrados.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

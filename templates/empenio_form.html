@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Empeño{% endblock %}
+{% block page_title %}Nuevo Empeño{% endblock %}
+
+{% block content %}
+<div class="two-col" style="align-items:start;">
+  <div class="card" style="grid-column:1/-1; max-width:800px;">
+    <form method="post">
+      <div class="form-grid cols3">
+
+        <div class="form-group full">
+          <label>Cliente *</label>
+          <select name="cliente_id" required id="sel-cliente">
+            <option value="">— Seleccionar cliente —</option>
+            {% for c in clientes %}
+            <option value="{{ c.id }}" {% if request.args.get('cliente_id') == c.id|string %}selected{% endif %}>
+              {{ c.nombre_completo }} {% if c.identificacion %}· {{ c.identificacion }}{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+          <a href="{{ url_for('nuevo_cliente') }}" style="font-size:.75rem; margin-top:4px;">+ Registrar nuevo cliente</a>
+        </div>
+
+        <div class="form-group full">
+          <label>Joya *</label>
+          <select name="joya_id" required>
+            <option value="">— Seleccionar joya del inventario —</option>
+            {% for j in joyas %}
+            <option value="{{ j.id }}">
+              #{{ j.id }} — {{ j.descripcion }}
+              {% if j.material %} · {{ j.material }}{% endif %}
+              {% if j.quilates %} {{ j.quilates }}{% endif %}
+              {% if j.valor_estimado %} · Val: ${{ "%.0f"|format(j.valor_estimado) }}{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+          <a href="{{ url_for('nueva_joya') }}" style="font-size:.75rem; margin-top:4px;">+ Registrar nueva joya</a>
+        </div>
+
+        <div class="form-group">
+          <label>Monto del Préstamo ($) *</label>
+          <input type="number" name="monto_prestamo" step="0.01" min="1" required
+                 placeholder="0.00" id="inp-monto">
+        </div>
+        <div class="form-group">
+          <label>Tasa de Interés (% mensual)</label>
+          <input type="number" name="tasa_interes" step="0.1" min="0" value="10" id="inp-tasa">
+        </div>
+        <div class="form-group">
+          <label>Plazo (días)</label>
+          <select name="dias_plazo" id="inp-plazo">
+            <option value="30">30 días</option>
+            <option value="60">60 días</option>
+            <option value="90">90 días</option>
+            <option value="120">120 días</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Fecha de Inicio</label>
+          <input type="date" name="fecha_inicio" value="{{ hoy|fecha }}">
+        </div>
+
+        <div class="form-group" style="grid-column:2/-1; background:rgba(201,168,76,.07); border:1px solid var(--border); border-radius:8px; padding:14px;">
+          <div style="font-size:.75rem; color:var(--text3); margin-bottom:8px; text-transform:uppercase; letter-spacing:.1em;">Resumen estimado</div>
+          <div style="display:flex; gap:20px;">
+            <div>
+              <div style="font-size:.7rem; color:var(--text3);">Interés 1er mes</div>
+              <div id="calc-interes" style="font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--gold);">$0</div>
+            </div>
+            <div>
+              <div style="font-size:.7rem; color:var(--text3);">Total a pagar</div>
+              <div id="calc-total" style="font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:var(--gold);">$0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label>Notas del contrato</label>
+          <textarea name="notas" placeholder="Condición de la joya, acuerdos especiales, etc."></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a href="{{ url_for('empenios') }}" class="btn btn-outline">Cancelar</a>
+        <button type="submit" class="btn btn-gold">Registrar Empeño</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const monto = document.getElementById('inp-monto');
+const tasa  = document.getElementById('inp-tasa');
+const plazo = document.getElementById('inp-plazo');
+
+function calcular() {
+  const m = parseFloat(monto.value) || 0;
+  const t = parseFloat(tasa.value) || 0;
+  const d = parseInt(plazo.value) || 30;
+  const meses = d / 30;
+  const interes = m * (t / 100) * meses;
+  document.getElementById('calc-interes').textContent = '$' + interes.toFixed(2);
+  document.getElementById('calc-total').textContent   = '$' + (m + interes).toFixed(2);
+}
+[monto, tasa, plazo].forEach(el => el.addEventListener('input', calcular));
+</script>
+{% endblock %}
